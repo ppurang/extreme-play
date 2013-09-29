@@ -12,6 +12,7 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
+    filters,
     "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT",
     "com.typesafe.slick" %% "slick" % "1.0.1",
     "net.liftweb" %% "lift-json-scalaz7" % "2.5",
