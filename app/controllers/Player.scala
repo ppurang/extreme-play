@@ -7,16 +7,5 @@ import play.api.Play.current
 
 object Player extends Controller {
 
-  val server = current.configuration.getString("http.base.url").get //fail fast
-  
-  def register(uid: String) = Action {
-      try {
-        UUID.fromString(uid)
-        Created(s"$uid").withHeaders("Location" -> s"$server/player/$uid")
-      }
-      catch {
-        case e:IllegalArgumentException => BadRequest(s"$uid isn't a uuid")
-      }
-  }
-  
+
 }
