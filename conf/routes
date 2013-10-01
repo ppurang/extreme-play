@@ -14,8 +14,10 @@ POST    /player               controllers.Registration.register
 # playing a player
 
 # history
+GET /player/:uid              controllers.History.player(uid: String)
 
 # leader-board
+GET /leader                   controllers.LeaderBoard.leader
 
 # playing a player
 
