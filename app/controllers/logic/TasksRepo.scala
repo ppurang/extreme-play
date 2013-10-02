@@ -11,5 +11,7 @@ class SimpleTaskRepo(predefinedTasks: Seq[Task]) extends TasksRepo {
 }
 
 class InfiniteTaskRepo(tasks: Iterator[Task]) extends TasksRepo {
-  def select: Iterator[Task] = tasks.take(100)
+  def select: Iterator[Task] = Iterator.fill(100)(()).map { x ⇒
+    tasks.next
+  }
 }
