@@ -36,13 +36,21 @@ object Player {
       player
     }
 
-    createTry.map { player =>
+    createTry.foreach { player =>
       Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url)
-      player
     }
+
+    createTry
   }
 
   def all: Seq[Player] = ref.get
 
   val sensitivPlayer = Json.format[Player]
+
+  def unregister(uid: String, secret: String) {
+    val playerAuth = UUID.fromString(secret)
+    ref.get.find(p => p.uid == uid && p.isAuthCorrect(playerAuth)).map { player =>
+      ref.transform(_.filterNot(_ == player))
+    }
+  }
 }
