@@ -8,3 +8,5 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-atmos-play" % "0.3.0")
+
+addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.1.2")
