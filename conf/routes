@@ -3,21 +3,22 @@
 # ~~~~
 
 # Home page
-GET     /                     controllers.Application.index
+GET         /                    controllers.Application.index
 
 # visibility testing
-GET /test            controllers.VisibilityTesting.test(url: String)
+GET         /test                controllers.VisibilityTesting.test(url: String)
 
 # registration
-POST    /player               controllers.Registration.register
+POST        /player              controllers.Registration.register
+DELETE      /player/:uid         controllers.Registration.unregister(uid: String)
 
 # playing a player
 
 # history
-GET /player/:uid              controllers.History.player(uid: String)
+GET         /player/:uid         controllers.History.player(uid: String)
 
 # leader-board
-GET /leader                   controllers.LeaderBoard.leader
+GET         /leader              controllers.LeaderBoard.leader
 
 # playing a player
 
@@ -26,4 +27,4 @@ GET /leader                   controllers.LeaderBoard.leader
 # leader-board
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET         /assets/*file        controllers.Assets.at(path="/public", file)

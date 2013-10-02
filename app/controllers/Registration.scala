@@ -27,4 +27,8 @@ object Registration extends Controller {
     }
   }
 
+  def unregister(uid: String) = Action(parse.text) { request =>
+    models.Player.unregister(uid, request.body)
+    NoContent
+  }
 }

@@ -43,4 +43,11 @@ object Player {
   }
 
   def all: Seq[Player] = ref.get
+
+  def unregister(uid: String, secret: String) {
+    val playerAuth = UUID.fromString(secret)
+    ref.get.find(p => p.uid == uid && p.isAuthCorrect(playerAuth)).map { player =>
+      ref.transform(_.filterNot(_ == player))
+    }
+  }
 }
