@@ -8,6 +8,7 @@ import play.api.libs.ws.WS
 import play.api.libs.concurrent.Execution.Implicits._
 
 import play.api.libs.json._
+import scala.util.{Try, Success, Failure}
 
 case class User(name: String, url: String) {
 
@@ -18,22 +19,22 @@ case class User(name: String, url: String) {
     }
   }
 
-  def ask(question: Question): Future[Either[Error, Answer]] =
-    WS.url(url).post(question.toJson).map { response =>
+  def ask(question: Question): Future[Answer] =
+    WS.url(url).withRequestTimeout(User.timeout).post(question.toJson).map { response =>
       import response._
 
       status match {
-        case 200  => Right(Answer.fromJson(json))
-        case code => Left(Error(code, statusText, body, question.uuid))
+        case 200  => Answer.fromJson(json)
+        case code => throw Error(code, statusText, body, question.uuid)
       }
     }
 }
 
 object User {
-  val timeout: Int = 10000
+  val timeout = 5000
 }
 
-case class Question(text: String, uuid: String) {
+case class Question(text: String, uuid: String = uuid) {
   def toJson: JsValue = Json.obj("query" -> text, "uuid" -> uuid)
 }
 case class Answer(text: String, uuid: String, questionUUID: String)
@@ -42,4 +43,4 @@ object Answer {
   def fromJson(json: JsValue): Answer = Answer(json \ "text" toString, uuid, json \ "question" toString)
 }
 
-case class Error(statusCode: Int, statusText: String, message: String, questionUUID: String)
+case class Error(statusCode: Int, statusText: String, message: String, questionUUID: String) extends Exception(message)
