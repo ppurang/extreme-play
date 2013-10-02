@@ -29,15 +29,31 @@ package object logic {
 
   val generalizedSumTaskGen: Rng[Task] =
     for {
-      n ← chooseint(1,10)
-      lst ← chooseint(1,10).list1(Size(10))
+      n   ← chooseint(1, 10)
+      lst ← chooseint(1, 10).list1(Size(10))
     } yield Task(s"What is the sum of $n + ${lst.list.mkString(" + ")}",
                     _ == (n + lst.suml).toString)
+
+  val generalizedMathTaskGen: Rng[Task] = {
+    val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
+      ({(i: Int, j: Int) ⇒ i + j}, " + "),
+      ({(i: Int, j: Int) ⇒ i - j}, " - "),
+      ({(i: Int, j: Int) ⇒ i / j}, " / "),
+      ({(i: Int, j: Int) ⇒ i * j}, " * ")
+    )
+    for {
+      lst ← chooseint(1, 10).list1(Size(10))
+      res ← oneofL(funLst)
+      (fun, desc) = res
+    } yield Task(s"What is ${lst.list.mkString(desc)}?",
+                    _ == lst.list.reduceRight(fun).toString)
+  }
 
   val infiniteRandomTaskStream = getTaskStream(simpleRandomTaskGen)
   val infiniteSumTaskGen = getTaskStream(simpleSumTaskGen)
   val infiniteGeneralizedSumTaskStream =
     getTaskStream(generalizedSumTaskGen)
+  val generalizedMathTaskStream = getTaskStream(generalizedMathTaskGen)
 
   def getTaskStream(gen: Rng[Task]) =
     Iterator.continually {
