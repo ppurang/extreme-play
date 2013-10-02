@@ -10,6 +10,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import scala.util.{Try, Success, Failure}
 
+import scala.concurrent.duration._
+
 case class User(name: String, url: String) {
 
   def ping: Future[Boolean] = WS.url(url).withRequestTimeout(User.timeout).get.map { response =>
@@ -19,15 +21,17 @@ case class User(name: String, url: String) {
     }
   }
 
-  def ask(question: Question): Future[Answer] =
-    WS.url(url).withRequestTimeout(User.timeout).post(question.toJson).map { response =>
+  def ask(question: Question): Future[Answer] = {
+    val ms = System.currentTimeMillis
+    WS.url(url).withRequestTimeout(User.timeout).post(question.toJson).collect { case response =>
       import response._
 
       status match {
-        case 200  => Answer.fromJson(json)
+        case 200  => Answer.fromJson(json).copy(duration = (System.currentTimeMillis - ms) millis)
         case code => throw Error(code, statusText, body, question.uuid)
       }
     }
+  }
 }
 
 object User {
@@ -37,7 +41,7 @@ object User {
 case class Question(text: String, uuid: String = uuid) {
   def toJson: JsValue = Json.obj("query" -> text, "uuid" -> uuid)
 }
-case class Answer(text: String, uuid: String, questionUUID: String)
+case class Answer(text: String, uuid: String, questionUUID: String, duration: Duration = -1 millis)
 
 object Answer {
   def fromJson(json: JsValue): Answer = Answer(json \ "text" toString, uuid, json \ "question" toString)
