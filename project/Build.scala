@@ -13,16 +13,17 @@ object ApplicationBuild extends Build {
     jdbc,
     anorm,
     filters,
-    "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT",
-    "com.typesafe.slick" %% "slick" % "1.0.1",
-    "net.liftweb" %% "lift-json-scalaz7" % "2.5",
-    "com.stackmob" %% "newman" % "1.0.0",
-    "io.spray" % "spray-client" % "1.2-20130822"
+    "org.scala-lang"     %% "scala-pickling"    % "0.8.0-SNAPSHOT",
+    "com.typesafe.slick" %% "slick"             % "1.0.1",
+    "net.liftweb"        %% "lift-json-scalaz7" % "2.5",
+    "com.stackmob"       %% "newman"            % "1.0.0",
+    "io.spray"           % "spray-client"       % "1.2-20130822",
+    "com.nicta"          %% "rng"               % "1.0-SNAPSHOT"
   )
 
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.3",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "spray nightly" at "http://nightlies.spray.io"
     // Add your own project settings here
