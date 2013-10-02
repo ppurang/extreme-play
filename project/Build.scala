@@ -17,6 +17,8 @@ object ApplicationBuild extends Build {
     "com.typesafe.slick" %% "slick" % "1.0.1",
     "net.liftweb" %% "lift-json-scalaz7" % "2.5",
     "com.stackmob" %% "newman" % "1.0.0",
+    "com.typesafe.akka" %% "akka-testkit" % "2.2.1" % "test",
+    "org.scalatest" % "scalatest_2.10.0" % "1.8" % "test",
     "io.spray" % "spray-client" % "1.2-20130822"
   )
 
