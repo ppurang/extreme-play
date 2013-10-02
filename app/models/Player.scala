@@ -7,9 +7,14 @@ import lib.game.Game
 import lib.game.GameProtocol
 import play.api.libs.json.Json
 
-case class Player(name: String, url: String) {
-  private val playerAuth = UUID.randomUUID
-  private val serverId = UUID.randomUUID
+case class Player(name: String, url: String, 
+    uid: String = UUID.randomUUID.toString, 
+    playerAuth:String = UUID.randomUUID.toString, 
+    serverId: String = UUID.randomUUID.toString) {
+  
+//  val uid = UUID.randomUUID.toString()
+//  val playerAuth = UUID.randomUUID.toString()
+//  val serverId = UUID.randomUUID.toString()
 
   def isAuthCorrect(playerAuth: UUID) =
     playerAuth == this.playerAuth
@@ -17,7 +22,6 @@ case class Player(name: String, url: String) {
   def isServerCorrect(serverId: UUID) =
     serverId == this.serverId
 
-  val uid = UUID.randomUUID
 }
 
 object Player {
