@@ -5,9 +5,12 @@ import com.nicta.rng._
 
 package object logic {
 
-  val taskRepo: TasksRepo = new SimpleTaskRepo(Seq(
+  val simpleTaskRepo: TasksRepo = new SimpleTaskRepo(Seq(
     Task("Multiply 5 with 4!", answer => answer == 20)
   ))
+
+  val infiniteTaskRepo: TasksRepo =
+    new InfiniteTaskRepo(infiniteTaskStream)
 
   import Rng._
   val simpleRandomTaskGen: Rng[Task] =
@@ -15,4 +18,7 @@ package object logic {
       query ← propernounstring(Size(10))
     } yield Task(query, _ ⇒ true)
 
+  val infiniteTaskStream = Iterator.continually {
+    simpleRandomTaskGen.list1(Size(100)).run.unsafePerformIO.list
+  }.flatten
 }
