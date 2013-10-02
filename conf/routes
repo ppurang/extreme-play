@@ -9,6 +9,7 @@ GET         /                    controllers.Application.index
 GET         /test                controllers.VisibilityTesting.test(url: String)
 
 # registration
+GET         /player              controllers.Registration.findAll
 POST        /player              controllers.Registration.register
 DELETE      /player/:uid         controllers.Registration.unregister(uid: String)
 
