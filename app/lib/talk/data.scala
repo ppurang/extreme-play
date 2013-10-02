@@ -30,7 +30,7 @@ case class User(name: String, url: String) {
 }
 
 object User {
-  val timeout: Int = 10000
+  val timeout = current.configuration.getInt("http.test.timeout").getOrElse(5000)
 }
 
 case class Question(text: String, uuid: String) {
