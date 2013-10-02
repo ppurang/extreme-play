@@ -3,6 +3,7 @@ package lib.game
 import akka.actor._
 import akka.event.LoggingReceive
 import play.api.libs.concurrent.Akka
+import play.api.Play.current
 
 object GameProtocol {
   case class PlayerRegistered(name: String, url: String)
