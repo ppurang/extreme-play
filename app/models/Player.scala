@@ -2,8 +2,18 @@ package models
 
 import concurrent.stm._
 import scala.util.Try
+import java.util.UUID
 
-case class Player(name: String, url: String)
+case class Player(name: String, url: String) {
+  private val playerAuth = UUID.randomUUID
+  private val serverId = UUID.randomUUID
+  
+  def isAuthCorrect(playerAuth: UUID) =
+    playerAuth == this.playerAuth
+  
+  def isServerCorrect(serverId: UUID) =
+    serverId == this.serverId
+}
 
 object Player {
   private val ref = Ref(Seq[Player]()).single
