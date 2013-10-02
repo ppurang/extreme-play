@@ -10,9 +10,14 @@ object Registration extends Controller {
   def register = Action(parse.json) { request =>
     request.body.validate[NewPlayer].map {
       case newPlayer: NewPlayer =>
-        val player = models.Player.register(newPlayer)
-        import player._
-        Ok(s"Hello $name, you're $url")
+        val attemp = models.Player.register(newPlayer)
+        attemp.map { player =>
+          import player._
+          Ok(s"Hello $name, you're $url")
+        }.getOrElse {
+          Conflict("Name or URL already in use.")
+        }
+
     }.recoverTotal {
       e => BadRequest("Faulty payload: " + JsError.toFlatJson(e))
     }
