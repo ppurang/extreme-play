@@ -35,10 +35,11 @@ object Player {
       player
     }
     
-    createTry.map { player =>
+    createTry.foreach { player =>
       Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url)
-      player
     }
+    
+    createTry
   }
 
   def all: Seq[Player] = ref.get
