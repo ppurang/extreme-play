@@ -7,14 +7,12 @@ import lib.game.Game
 import lib.game.GameProtocol
 import play.api.libs.json.Json
 
+import Player.uuid
+
 case class Player(name: String, url: String, 
-    uid: String = UUID.randomUUID.toString, 
-    playerAuth:String = UUID.randomUUID.toString, 
-    serverId: String = UUID.randomUUID.toString) {
-  
-//  val uid = UUID.randomUUID.toString()
-//  val playerAuth = UUID.randomUUID.toString()
-//  val serverId = UUID.randomUUID.toString()
+    uid: String = uuid(), 
+    playerAuth:String = uuid(), 
+    serverId: String = uuid()) {
 
   def isAuthCorrect(playerAuth: String) =
     playerAuth == this.playerAuth
@@ -51,9 +49,10 @@ object Player {
 
   val sensitivPlayer = Json.format[Player]
 
-  def unregister(uid: String, secret: String) {
+  def unregister(uid: String, secret: String): Unit =
     ref.get.find(p => p.uid == uid && p.isAuthCorrect(secret)).map { player =>
       ref.transform(_.filterNot(_ == player))
     }
-  }
+  
+  private[Player] def uuid() = UUID.randomUUID.toString
 }
