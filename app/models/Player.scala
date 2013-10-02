@@ -16,10 +16,10 @@ case class Player(name: String, url: String,
 //  val playerAuth = UUID.randomUUID.toString()
 //  val serverId = UUID.randomUUID.toString()
 
-  def isAuthCorrect(playerAuth: UUID) =
+  def isAuthCorrect(playerAuth: String) =
     playerAuth == this.playerAuth
 
-  def isServerCorrect(serverId: UUID) =
+  def isServerCorrect(serverId: String) =
     serverId == this.serverId
 
 }
@@ -52,8 +52,7 @@ object Player {
   val sensitivPlayer = Json.format[Player]
 
   def unregister(uid: String, secret: String) {
-    val playerAuth = UUID.fromString(secret)
-    ref.get.find(p => p.uid == uid && p.isAuthCorrect(playerAuth)).map { player =>
+    ref.get.find(p => p.uid == uid && p.isAuthCorrect(secret)).map { player =>
       ref.transform(_.filterNot(_ == player))
     }
   }
