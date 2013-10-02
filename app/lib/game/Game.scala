@@ -9,6 +9,7 @@ import play.api.Play.current
 object GameProtocol {
   case class PlayerRegistered(name: String, url: String)
   case object GetRegisteredPlayers
+  case class PlayerUnregistered(name: String)
 }
 
 object Game {
@@ -25,7 +26,16 @@ class Game extends Actor with ActorLogging {
       	playersByName += (name -> actorPlayer.path)
       	actorPlayer ! PlayerProtocol.GameStarted 
       } else {
-      	//player already registrated, what should we do???
+      	//player already registreted, what should we do???
+      }
+
+    case PlayerUnregistered(name) =>
+    	if (!playersByName.contains(name)){
+	      	//player is not registreted, what should we do???
+      } else {
+      		val actorPath = playersByName(name)
+      		playersByName -= name
+      		context.actorSelection(actorPath) ! PlayerProtocol.KillYourself
       }
 
     case GetRegisteredPlayers =>
