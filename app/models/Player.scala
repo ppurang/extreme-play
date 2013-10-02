@@ -3,6 +3,8 @@ package models
 import concurrent.stm._
 import scala.util.Try
 import java.util.UUID
+import lib.game.Game
+import lib.game.GameProtocol
 
 case class Player(name: String, url: String) {
   private val playerAuth = UUID.randomUUID
@@ -24,12 +26,18 @@ object Player {
     val NewPlayer(name, url) = newPlayer
     val player = Player(name, url)
 
-    Try {
+    val createTry = Try {
       ref.transform { players =>
         assert(players forall (_.name != name))
         assert(players forall (_.url != url))
         players :+ player
       }
+      player
+    }
+    
+    createTry.map { player =>
+      //TODO use
+      //Game.rootActor ! GameProtocol.PlayerRegistered(player.name, player.url)
       player
     }
   }
