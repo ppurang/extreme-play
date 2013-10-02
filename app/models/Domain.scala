@@ -9,4 +9,4 @@ object NewPlayer {
   implicit val newPlayerFormat : Format[NewPlayer] = Json.format[NewPlayer]
 }
 
-case class Task(query: String, verify: String => Boolean)
+case class Task(query: String, verify: String => Boolean, score: Int = 0)
