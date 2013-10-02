@@ -8,7 +8,9 @@ import syntax.foldable._
 
 package object logic {
 
-  val simpleTaskRepo: TasksRepo = new SimpleTaskRepo(Seq(
+  val taskRepo: TasksRepo = stubTaskRepo
+  
+  val stubTaskRepo: TasksRepo = new SimpleTaskRepo(Seq(
     Task("Multiply 5 with 4!", answer => answer == 20)
   ))
 
@@ -32,7 +34,13 @@ package object logic {
       n   ← chooseint(1, 10)
       lst ← chooseint(1, 10).list1(Size(10))
     } yield Task(s"What is the sum of $n + ${lst.list.mkString(" + ")}",
-                    _ == (n + lst.suml).toString)
+      _ == (n + lst.suml).toString)
+
+  def numberList2Gen(max: Int): Rng[List[Int]] =
+    for {
+      n ← chooseint(1,10)
+      lst ← chooseint(1,10).list1(Size(10))
+    } yield n :: lst.list
 
   val generalizedMathTaskGen: Rng[Task] = {
     val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
@@ -42,11 +50,11 @@ package object logic {
       ({(i: Int, j: Int) ⇒ i * j}, " * ")
     )
     for {
-      lst ← chooseint(1, 10).list1(Size(10))
+      lst ← numberList2Gen(10)
       res ← oneofL(funLst)
       (fun, desc) = res
-    } yield Task(s"What is ${lst.list.mkString(desc)}?",
-                    _ == lst.list.reduceRight(fun).toString)
+    } yield Task(s"What is ${lst.mkString(desc)}?",
+      _ == lst.reduceRight(fun).toString)
   }
 
   val infiniteRandomTaskStream = getTaskStream(simpleRandomTaskGen)
