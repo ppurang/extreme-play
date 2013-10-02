@@ -7,8 +7,6 @@ import std.anyVal._
 import syntax.foldable._
 
 package object logic {
-
-  val taskRepo: TasksRepo = infiniteTaskRepo
   
   val infiniteTaskRepo: TasksRepo = new InfiniteTaskRepo(taskStream)
 
@@ -62,4 +60,6 @@ package object logic {
     Iterator.continually {
       gen.list1(Size(100)).run.unsafePerformIO.list
     }.flatten
+
+  val taskRepo: TasksRepo = infiniteTaskRepo
 }
