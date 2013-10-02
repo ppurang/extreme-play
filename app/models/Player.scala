@@ -5,18 +5,23 @@ import scala.util.Try
 import java.util.UUID
 import lib.game.Game
 import lib.game.GameProtocol
+import play.api.libs.json.Json
 
-case class Player(name: String, url: String) {
-  private val playerAuth = UUID.randomUUID
-  private val serverId = UUID.randomUUID
+case class Player(name: String, url: String, 
+    uid: String = UUID.randomUUID.toString, 
+    playerAuth:String = UUID.randomUUID.toString, 
+    serverId: String = UUID.randomUUID.toString) {
   
-  def isAuthCorrect(playerAuth: UUID) =
+//  val uid = UUID.randomUUID.toString()
+//  val playerAuth = UUID.randomUUID.toString()
+//  val serverId = UUID.randomUUID.toString()
+
+  def isAuthCorrect(playerAuth: String) =
     playerAuth == this.playerAuth
-  
-  def isServerCorrect(serverId: UUID) =
+
+  def isServerCorrect(serverId: String) =
     serverId == this.serverId
-  
-  val uid = UUID.randomUUID
+
 }
 
 object Player {
@@ -28,18 +33,27 @@ object Player {
 
     val createTry = Try {
       ref.transform { players =>
-        assert(players forall (_.name != name))
-        assert(players forall (_.url != url))
+        require(players forall (_.name != name), "A player with this name already exsits")
+        require(players forall (_.url != url), "URL is already used by an other player")
         players :+ player
       }
       player
     }
-    
-    createTry.map { player =>
+
+    createTry.foreach { player =>
       Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url)
-      player
     }
+
+    createTry
   }
 
   def all: Seq[Player] = ref.get
+
+  val sensitivPlayer = Json.format[Player]
+
+  def unregister(uid: String, secret: String) {
+    ref.get.find(p => p.uid == uid && p.isAuthCorrect(secret)).map { player =>
+      ref.transform(_.filterNot(_ == player))
+    }
+  }
 }
