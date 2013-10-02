@@ -12,10 +12,9 @@ object Registration extends Controller {
       case newPlayer: NewPlayer =>
         val attemp = models.Player.register(newPlayer)
         attemp.map { player =>
-          import player._
-          Created(s"Hello $name, you're $url").
+          Created(Json.toJson(player)(models.Player.sensitivPlayer)).
           withHeaders(
-            "location" ->
+            "Location" ->
               routes.History.player(uid.toString).absoluteURL().toString
           )
         }.getOrElse {
