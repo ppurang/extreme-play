@@ -2,6 +2,7 @@ package controllers
 
 import play.api.mvc._
 import play.api.libs.json.Json.toJson
+import play.api.libs.json.JsError.toFlatJson
 import models._
 import NewPlayer._
 import play.api.Play._
@@ -28,7 +29,7 @@ object Registration extends Controller {
         }
 
     }.recoverTotal {
-      e => BadRequest("Faulty payload: " + JsError.toFlatJson(e))
+      e => BadRequest("Faulty payload: " + toFlatJson(e))
     }
   }
 
