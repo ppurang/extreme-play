@@ -1,8 +1,8 @@
 package lib.game
 
-import akka.actor.{Props, Actor}
+import akka.actor.{Props, Actor, PoisonPill}
 import akka.event.LoggingReceive
-import lib.game.PlayerProtocol.{TaskAnswerFailed, TaskAnswered, GameStarted}
+import lib.game.PlayerProtocol._
 import lib.game.Player.NewTaskRequired
 import controllers.logic.infiniteTaskRepo
 import talk.{Error, Answer, Question, User}
@@ -12,6 +12,7 @@ object PlayerProtocol {
   case object GameStarted
   case class TaskAnswered(teamName: String, answer: Answer)
   case class TaskAnswerFailed(teamName: String, error: Error)
+  case object KillYourself
 }
 
 object Player {
@@ -28,6 +29,7 @@ class Player(
     name: String,
     url: String,
     taskIntervalGen: TaskIntervalGenerator) extends Actor {
+  var deathImminent = false
   val webservice = User(name, url)
   implicit val ec = scala.concurrent.ExecutionContext.global
   override def receive = LoggingReceive {
@@ -40,12 +42,22 @@ class Player(
         responseF onComplete {
           case Success(answer) =>
             context.system.eventStream publish TaskAnswered(name, answer)
-            self ! NewTaskRequired
+            scheduleNewTask
           case Failure(error: Error) =>
             context.system.eventStream publish TaskAnswerFailed(name, error)
-            self ! NewTaskRequired
+            scheduleNewTask
           case _ =>
         }
       }
+      case KillYourself => 
+        this.deathImminent = true
+  }
+
+  private[Player] def scheduleNewTask() {
+    if (!this.deathImminent){
+        self ! NewTaskRequired
+      } else {
+        self ! PoisonPill
+      } 
   }
 }
