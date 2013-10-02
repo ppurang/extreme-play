@@ -24,48 +24,52 @@ package object logic {
     } yield task
 
   lazy val mathTaskGen: Rng[Task] = {
-    val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
-      ({(i: Int, j: Int) ⇒ i + j}, " + "),
-      ({(i: Int, j: Int) ⇒ i - j}, " - "),
-      ({(i: Int, j: Int) ⇒ i / j}, " / "),
-      ({(i: Int, j: Int) ⇒ i * j}, " * ")
-    )
+    val funLst: NonEmptyList[((Int, Int) ⇒ Int, String, Int)] =
+      NonEmptyList(
+        ({(i: Int, j: Int) ⇒ i + j}, " + ", 0),
+        ({(i: Int, j: Int) ⇒ i - j}, " - ", 0),
+        ({(i: Int, j: Int) ⇒ i / j}, " / ", 1),
+        ({(i: Int, j: Int) ⇒ i * j}, " * ", 1)
+      )
     for {
       lst ← numberList2Gen(10)
       res ← oneofL(funLst)
-      (fun, desc) = res
+      (fun, desc, score) = res
     } yield Task(s"What is the result of ${lst.mkString(desc)}?",
-      _ == lst.reduceRight(fun).toString)
+      _ == lst.reduceRight(fun).toString, score + lst.size)
   }
 
   lazy val matcherTaskGen: Rng[Task] = {
-    case class Entity(val name: String, is: String, answer: String)
+    case class Entity(val name: String, is: String,
+      answer: String, score: Int)
     val entities = NonEmptyList(
-      Entity("apple", "color", "red"),
-      Entity("banana", "color", "yellow"),
-      Entity("bottle", "beverage", "beer")
+      Entity("apple", "color", "red", 30),
+      Entity("banana", "color", "yellow", 30),
+      Entity("bottle", "beverage", "beer", 30)
     )
     for {
       entity ← oneofL(entities)
     } yield Task(s"What is the ${entity.is} of ${entity.name}?",
-      _ == entity.answer)
+      _ == entity.answer, entity.score)
   }
 
   lazy val selectOneGen: Rng[Task] = {
-    val questions: NonEmptyList[(String, List[Int] ⇒ Int)] = NonEmptyList(
-      ("max", _.max),
-      ("min", _.min),
-      ("first", _.head),
-      ("last", _.last)
-    )
-    
+    val questions: NonEmptyList[(String, List[Int] ⇒ Int, Int)] =
+      NonEmptyList(
+        ("max", _.max, 15),
+        ("min", _.min, 15),
+        ("first", _.head, 0),
+        ("last", _.last, 0)
+      )
+
     for {
       lst   ← chooseint(1, 10).list1(Size(10))
       quest ← oneofL(questions)
-      (name, fn) = quest 
-    } yield Task(s"What is the $name of ${lst.list mkString ", "}", _ == fn(lst.list).toString)
-  }              
-  
+      (name, fn, score) = quest
+    } yield Task(s"What is the $name of ${lst.list mkString ", "}",
+      _ == fn(lst.list).toString, score + lst.size)
+  }
+
   lazy val streamTaskGen: Rng[Task] = {
     lazy val fibs: Stream[Int] =
       0 #:: 1 #:: fibs.zip(fibs.tail).map { case(m, n) ⇒ n + m }
@@ -76,23 +80,24 @@ package object logic {
       else n #:: sieve(n + 2)
 
     val streams = NonEmptyList(
-      (fibs, "Fibonacci"),
-      (naturals, "Naturals"),
-      (primes, "Primes"))
+      (fibs, "Fibonacci", 20),
+      (naturals, "Naturals", 0),
+      (primes, "Primes", 50))
 
     for {
       n   ← chooseint(1, 5)
       res ← oneofL(streams)
-      (stream, name) = res
+      (stream, name, score) = res
     } yield Task(
       s"What is the first $n elements of $name (space-separated)?",
-      _ == stream.take(n).mkString(" "))
+      _ == stream.take(n).mkString(" "), score + n)
   }
 
   lazy val mathTaskStream    = getTaskStream(mathTaskGen)
   lazy val matcherTaskStream = getTaskStream(matcherTaskGen)
   lazy val taskStream        = getTaskStream(combinedGen(
-    NonEmptyList(mathTaskGen, matcherTaskGen, streamTaskGen, selectOneGen)))
+    NonEmptyList(mathTaskGen, matcherTaskGen,
+      streamTaskGen, selectOneGen)))
 
   def getTaskStream(gen: Rng[Task]) =
     Iterator.continually {
