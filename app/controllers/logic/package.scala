@@ -8,14 +8,15 @@ import syntax.foldable._
 
 package object logic {
 
-  val taskRepo: TasksRepo = stubTaskRepo
+  val taskRepo: TasksRepo = infiniteTaskRepo
   
   val stubTaskRepo: TasksRepo = new SimpleTaskRepo(Seq(
     Task("Multiply 5 with 4!", answer => answer == 20)
   ))
 
   val infiniteTaskRepo: TasksRepo =
-    new InfiniteTaskRepo(infiniteRandomTaskStream)
+    new InfiniteTaskRepo(getTaskStream(combinedGen(NonEmptyList(
+      generalizedMathTaskGen))))
 
   import Rng._
   val simpleRandomTaskGen: Rng[Task] =
@@ -59,7 +60,7 @@ package object logic {
       lst ← numberList2Gen(10)
       res ← oneofL(funLst)
       (fun, desc) = res
-    } yield Task(s"What is ${lst.mkString(desc)}?",
+    } yield Task(s"What is the result of ${lst.mkString(desc)}?",
       _ == lst.reduceRight(fun).toString)
   }
 
