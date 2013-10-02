@@ -51,6 +51,21 @@ package object logic {
       _ == entity.answer)
   }
 
+  lazy val selectOneGen: Rng[Task] = {
+    val questions: NonEmptyList[(String, List[Int] => Int)] = NonEmptyList(
+      ("max", _.max),
+      ("min", _.min),
+      ("first", _.head),
+      ("last", _.last)
+    )
+    
+    for {
+      lst <- chooseint(1,10).list1(Size(10))
+      quest <- oneofL(questions)
+      (name, fn) = quest 
+    } yield Task(s"What is the $name of ${lst.list mkString ", "}", _ == fn(lst.list).toString)
+  }              
+  
   lazy val streamTaskGen: Rng[Task] = {
     lazy val fibs: Stream[Int] =
       0 #:: 1 #:: fibs.zip(fibs.tail).map { case(m, n) ⇒ n + m }
@@ -77,7 +92,7 @@ package object logic {
   lazy val mathTaskStream    = getTaskStream(mathTaskGen)
   lazy val matcherTaskStream = getTaskStream(matcherTaskGen)
   lazy val taskStream        = getTaskStream(combinedGen(
-    NonEmptyList(mathTaskGen, matcherTaskGen, streamTaskGen)))
+    NonEmptyList(mathTaskGen, matcherTaskGen, streamTaskGen, selectOneGen)))
 
   def getTaskStream(gen: Rng[Task]) =
     Iterator.continually {
