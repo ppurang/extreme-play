@@ -7,8 +7,8 @@ import std.anyVal._
 import syntax.foldable._
 
 package object logic {
-  
-  val infiniteTaskRepo: TasksRepo = new InfiniteTaskRepo(taskStream)
+
+  lazy val infiniteTaskRepo: TasksRepo = new InfiniteTaskRepo(taskStream)
 
   import Rng._
   def numberList2Gen(max: Int): Rng[List[Int]] =
@@ -23,7 +23,7 @@ package object logic {
       task ← gen
     } yield task
 
-  val mathTaskGen: Rng[Task] = {
+  lazy val mathTaskGen: Rng[Task] = {
     val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
       ({(i: Int, j: Int) ⇒ i + j}, " + "),
       ({(i: Int, j: Int) ⇒ i - j}, " - "),
@@ -38,7 +38,7 @@ package object logic {
       _ == lst.reduceRight(fun).toString)
   }
 
-  val matcherTaskGen: Rng[Task] = {
+  lazy val matcherTaskGen: Rng[Task] = {
     case class Entity(val name: String, is: String, answer: String)
     val entities = NonEmptyList(
       Entity("apple", "color", "red"),
@@ -51,7 +51,7 @@ package object logic {
       _ == entity.answer)
   }
 
-  val streamTaskGen: Rng[Task] = {
+  lazy val streamTaskGen: Rng[Task] = {
     lazy val fibs: Stream[Int] =
       0 #:: 1 #:: fibs.zip(fibs.tail).map { case(m, n) ⇒ n + m }
     lazy val naturals: Stream[Int] = 0 #:: naturals.map(_ + 1)
@@ -74,9 +74,9 @@ package object logic {
       _ == stream.take(n).mkString(" "))
   }
 
-  val mathTaskStream    = getTaskStream(mathTaskGen)
-  val matcherTaskStream = getTaskStream(matcherTaskGen)
-  val taskStream        = getTaskStream(combinedGen(
+  lazy val mathTaskStream    = getTaskStream(mathTaskGen)
+  lazy val matcherTaskStream = getTaskStream(matcherTaskGen)
+  lazy val taskStream        = getTaskStream(combinedGen(
     NonEmptyList(mathTaskGen, matcherTaskGen, streamTaskGen)))
 
   def getTaskStream(gen: Rng[Task]) =
@@ -84,5 +84,5 @@ package object logic {
       gen.list1(Size(100)).run.unsafePerformIO.list
     }.flatten
 
-  val taskRepo: TasksRepo = infiniteTaskRepo
+  lazy val taskRepo: TasksRepo = infiniteTaskRepo
 }
