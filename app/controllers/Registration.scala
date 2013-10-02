@@ -27,7 +27,7 @@ object Registration extends Controller {
           Created(Json.toJson(player)(models.Player.sensitivPlayer)).
           withHeaders(
             "Location" ->
-              routes.History.player(uid.toString).absoluteURL().toString
+              routes.History.player(player.uid.toString).absoluteURL().toString
           )
         }.getOrElse {
           Conflict("Name or URL already in use.")
