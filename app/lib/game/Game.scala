@@ -7,10 +7,6 @@ object GameProtocol {
   case class PlayerRegistered(name: String, url: String)
 }
 
-object Game {
-
-}
-
 class Game extends Actor with ActorLogging {
   import GameProtocol._
   private[game] var playersByName = Map.empty[String, ActorPath]
