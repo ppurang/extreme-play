@@ -13,6 +13,8 @@ case class Player(name: String, url: String) {
   
   def isServerCorrect(serverId: UUID) =
     serverId == this.serverId
+  
+  val uid = UUID.randomUUID
 }
 
 object Player {
