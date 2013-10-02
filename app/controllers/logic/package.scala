@@ -10,33 +10,9 @@ package object logic {
 
   val taskRepo: TasksRepo = infiniteTaskRepo
   
-  val stubTaskRepo: TasksRepo = new SimpleTaskRepo(Seq(
-    Task("Multiply 5 with 4!", answer => answer == 20)
-  ))
-
-  val infiniteTaskRepo: TasksRepo =
-    new InfiniteTaskRepo(getTaskStream(combinedGen(NonEmptyList(
-      generalizedMathTaskGen))))
+  val infiniteTaskRepo: TasksRepo = new InfiniteTaskRepo(taskStream)
 
   import Rng._
-  val simpleRandomTaskGen: Rng[Task] =
-    for {
-      query ← propernounstring(Size(10))
-    } yield Task(query, _ ⇒ true)
-
-  val simpleSumTaskGen: Rng[Task] =
-    for {
-      n ← chooseint(1, 10)
-      m ← chooseint(1, 10)
-    } yield Task(s"What is the sum of $n and $m?", _ == (n + m).toString)
-
-  val generalizedSumTaskGen: Rng[Task] =
-    for {
-      n   ← chooseint(1, 10)
-      lst ← chooseint(1, 10).list1(Size(10))
-    } yield Task(s"What is the sum of $n + ${lst.list.mkString(" + ")}",
-      _ == (n + lst.suml).toString)
-
   def numberList2Gen(max: Int): Rng[List[Int]] =
     for {
       n ← chooseint(1,10)
@@ -49,7 +25,7 @@ package object logic {
       task ← gen
     } yield task
 
-  val generalizedMathTaskGen: Rng[Task] = {
+  val mathTaskGen: Rng[Task] = {
     val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
       ({(i: Int, j: Int) ⇒ i + j}, " + "),
       ({(i: Int, j: Int) ⇒ i - j}, " - "),
@@ -64,11 +40,23 @@ package object logic {
       _ == lst.reduceRight(fun).toString)
   }
 
-  val infiniteRandomTaskStream = getTaskStream(simpleRandomTaskGen)
-  val infiniteSumTaskGen = getTaskStream(simpleSumTaskGen)
-  val infiniteGeneralizedSumTaskStream =
-    getTaskStream(generalizedSumTaskGen)
-  val generalizedMathTaskStream = getTaskStream(generalizedMathTaskGen)
+  val matcherTaskGen: Rng[Task] = {
+    case class Entity(val name: String, is: String, answer: String)
+    val entities = NonEmptyList(
+      Entity("apple", "color", "red"),
+      Entity("banana", "color", "yellow"),
+      Entity("bottle", "beverage", "beer")
+    )
+    for {
+      entity ← oneofL(entities)
+    } yield Task(s"What is the ${entity.is} of ${entity.name}?",
+      _ == entity.answer)
+  }
+
+  val mathTaskStream    = getTaskStream(mathTaskGen)
+  val matcherTaskStream = getTaskStream(matcherTaskGen)
+  val taskStream        = getTaskStream(combinedGen(
+    NonEmptyList(mathTaskGen, matcherTaskGen)))
 
   def getTaskStream(gen: Rng[Task]) =
     Iterator.continually {
