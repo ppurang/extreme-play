@@ -36,8 +36,7 @@ object Player {
     }
     
     createTry.map { player =>
-      //TODO use
-      //Game.rootActor ! GameProtocol.PlayerRegistered(player.name, player.url)
+      Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url)
       player
     }
   }
