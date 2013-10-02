@@ -1,10 +1,16 @@
 package lib.game
 
-import akka.actor.{ActorPath, ActorLogging, Actor}
+import akka.actor._
 import akka.event.LoggingReceive
+import play.api.libs.concurrent.Akka
+import play.api.Play.current
 
 object GameProtocol {
   case class PlayerRegistered(name: String, url: String)
+}
+
+object Game {
+  val ref: ActorRef = Akka.system.actorOf(Props[Game])
 }
 
 class Game extends Actor with ActorLogging {
@@ -13,5 +19,6 @@ class Game extends Actor with ActorLogging {
   override def receive = LoggingReceive {
     case PlayerRegistered(name, url) =>
       playersByName += (name -> context.actorOf(Player.props(name, url)).path)
+
   }
 }
