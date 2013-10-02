@@ -6,6 +6,7 @@ import lib.game.PlayerProtocol.{TaskAnswerFailed, TaskAnswered, GameStarted}
 import lib.game.Player.NewTaskRequired
 import controllers.logic.infiniteTaskRepo
 import talk.{Error, Answer, Question, User}
+import scala.util.{Success, Failure}
 
 object PlayerProtocol {
   case object GameStarted
@@ -36,13 +37,14 @@ class Player(
       if (infiniteTaskRepo.select.hasNext) {
         val task = infiniteTaskRepo.select.next()
         val responseF = webservice ask Question(task.query)
-        responseF onSuccess {
-          case Right(answer) =>
+        responseF onComplete {
+          case Success(answer) =>
             context.system.eventStream publish TaskAnswered(name, answer)
             self ! NewTaskRequired
-          case Left(error) =>
+          case Failure(error: Error) =>
             context.system.eventStream publish TaskAnswerFailed(name, error)
             self ! NewTaskRequired
+          case _ =>
         }
       }
   }
