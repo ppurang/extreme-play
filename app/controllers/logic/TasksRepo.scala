@@ -9,3 +9,7 @@ trait TasksRepo {
 class SimpleTaskRepo(predefinedTasks: Seq[Task]) extends TasksRepo {
   def select: Iterator[Task] = predefinedTasks.iterator
 }
+
+class InfiniteTaskRepo(tasks: Iterator[Task]) extends TasksRepo {
+  def select: Iterator[Task] = tasks.take(100)
+}
