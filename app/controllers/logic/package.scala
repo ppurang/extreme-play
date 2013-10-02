@@ -42,6 +42,12 @@ package object logic {
       lst ← chooseint(1,10).list1(Size(10))
     } yield n :: lst.list
 
+  def combinedGen(taskGenerators: NonEmptyList[Rng[Task]]): Rng[Task] =
+    for {
+      gen ← oneofL(taskGenerators)
+      task ← gen
+    } yield task
+
   val generalizedMathTaskGen: Rng[Task] = {
     val funLst: NonEmptyList[((Int, Int) ⇒ Int, String)] = NonEmptyList(
       ({(i: Int, j: Int) ⇒ i + j}, " + "),
