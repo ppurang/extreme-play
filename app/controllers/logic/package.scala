@@ -24,12 +24,13 @@ package object logic {
     } yield task
 
   lazy val mathTaskGen: Rng[Task] = {
-    val funLst: NonEmptyList[((Int, Int) ⇒ Int, String, Int)] = NonEmptyList(
-      ({(i: Int, j: Int) ⇒ i + j}, " + ", 0),
-      ({(i: Int, j: Int) ⇒ i - j}, " - ", 0),
-      ({(i: Int, j: Int) ⇒ i / j}, " / ", 1),
-      ({(i: Int, j: Int) ⇒ i * j}, " * ", 1)
-    )
+    val funLst: NonEmptyList[((Int, Int) ⇒ Int, String, Int)] =
+      NonEmptyList(
+        ({(i: Int, j: Int) ⇒ i + j}, " + ", 0),
+        ({(i: Int, j: Int) ⇒ i - j}, " - ", 0),
+        ({(i: Int, j: Int) ⇒ i / j}, " / ", 1),
+        ({(i: Int, j: Int) ⇒ i * j}, " * ", 1)
+      )
     for {
       lst ← numberList2Gen(10)
       res ← oneofL(funLst)
@@ -39,7 +40,8 @@ package object logic {
   }
 
   lazy val matcherTaskGen: Rng[Task] = {
-    case class Entity(val name: String, is: String, answer: String, score: Int)
+    case class Entity(val name: String, is: String,
+      answer: String, score: Int)
     val entities = NonEmptyList(
       Entity("apple", "color", "red", 30),
       Entity("banana", "color", "yellow", 30),
@@ -52,18 +54,20 @@ package object logic {
   }
 
   lazy val selectOneGen: Rng[Task] = {
-    val questions: NonEmptyList[(String, List[Int] ⇒ Int, Int)] = NonEmptyList(
-      ("max", _.max, 15),
-      ("min", _.min, 15),
-      ("first", _.head, 0),
-      ("last", _.last, 0)
-    )
+    val questions: NonEmptyList[(String, List[Int] ⇒ Int, Int)] =
+      NonEmptyList(
+        ("max", _.max, 15),
+        ("min", _.min, 15),
+        ("first", _.head, 0),
+        ("last", _.last, 0)
+      )
 
     for {
       lst   ← chooseint(1, 10).list1(Size(10))
       quest ← oneofL(questions)
       (name, fn, score) = quest
-    } yield Task(s"What is the $name of ${lst.list mkString ", "}", _ == fn(lst.list).toString, score + lst.size)
+    } yield Task(s"What is the $name of ${lst.list mkString ", "}",
+      _ == fn(lst.list).toString, score + lst.size)
   }
 
   lazy val streamTaskGen: Rng[Task] = {
@@ -92,7 +96,8 @@ package object logic {
   lazy val mathTaskStream    = getTaskStream(mathTaskGen)
   lazy val matcherTaskStream = getTaskStream(matcherTaskGen)
   lazy val taskStream        = getTaskStream(combinedGen(
-    NonEmptyList(mathTaskGen, matcherTaskGen, streamTaskGen, selectOneGen)))
+    NonEmptyList(mathTaskGen, matcherTaskGen,
+      streamTaskGen, selectOneGen)))
 
   def getTaskStream(gen: Rng[Task]) =
     Iterator.continually {
