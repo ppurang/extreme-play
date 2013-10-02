@@ -19,13 +19,13 @@ case class User(name: String, url: String) {
     }
   }
 
-  def ask(question: Question): Future[Try[Answer]] =
+  def ask(question: Question): Future[Answer] =
     WS.url(url).withRequestTimeout(User.timeout).post(question.toJson).map { response =>
       import response._
 
       status match {
-        case 200  => Success(Answer.fromJson(json))
-        case code => Failure(Error(code, statusText, body, question.uuid))
+        case 200  => Answer.fromJson(json)
+        case code => throw Error(code, statusText, body, question.uuid)
       }
     }
 }
