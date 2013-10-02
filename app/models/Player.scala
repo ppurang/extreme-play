@@ -33,8 +33,8 @@ object Player {
 
     val createTry = Try {
       ref.transform { players =>
-        assert(players forall (_.name != name))
-        assert(players forall (_.url != url))
+        require(players forall (_.name != name), "A player with this name already exsits")
+        require(players forall (_.url != url), "URL is already used by an other player")
         players :+ player
       }
       player
