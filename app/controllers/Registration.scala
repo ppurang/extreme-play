@@ -19,7 +19,7 @@ object Registration extends Controller {
       case newPlayer: NewPlayer =>
         val attemp = models.Player.register(newPlayer)
         attemp.map { player =>
-          Created(toJson(player)(models.Player.sensitivPlayer)).
+          Created(toJson(player)(models.Player.writePlayerSensitive)).
           withHeaders(
             "Location" ->
               routes.History.player(player.uid.toString).absoluteURL().toString
@@ -33,10 +33,19 @@ object Registration extends Controller {
     }
   }
 
-  def unregister(uid: String) = Action(parse.anyContent) { request =>
-    if (unregisterable) {
-      request.headers.get("player-auth-key").map(models.Player.unregister(uid, _))
-      NoContent
-    } else NotFound("Disabled in configuration")
+  def unregister(uid: String) = FeaturedAction("feature.player.unregister-able") { request =>
+    request.headers.get("player-auth-key").map(models.Player.unregister(uid, _))
+    NoContent
+  }
+  
+  def togglePause(uid: String) = FeaturedAction("feature.player.pause-able") { request => 
+    request.headers.get("player-auth-key").map(
+        models.Player.toggleState(uid, _).map { toggledPlayer => 
+          toggledPlayer.state match {
+            case models.Player.Paused => Ok(s"player ${toggledPlayer.name} is now pausing")
+            case models.Player.Running => Ok(s"player ${toggledPlayer.name} is now running")
+          }  
+        }.getOrElse(Ok) //TODO player not found or no matching key
+    ).getOrElse(BadRequest) //TODO no auth-key
   }
 }
