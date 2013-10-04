@@ -5,26 +5,33 @@ import scala.util.Try
 import java.util.UUID
 import lib.game.Game
 import lib.game.GameProtocol
-import play.api.libs.json.Json
+import play.api.libs.json._
 
-case class Player(name: String, url: String, 
-    uid: String = UUID.randomUUID.toString, 
-    playerAuth:String = UUID.randomUUID.toString, 
-    serverId: String = UUID.randomUUID.toString) {
+case class Player(uid: String, name: String, url: String, state: Player.State, playerAuth: String, serverId: String) {
+  import Player._
   
-//  val uid = UUID.randomUUID.toString()
-//  val playerAuth = UUID.randomUUID.toString()
-//  val serverId = UUID.randomUUID.toString()
+  def isAuthCorrect(playerAuth: String) = playerAuth == this.playerAuth
 
-  def isAuthCorrect(playerAuth: String) =
-    playerAuth == this.playerAuth
-
-  def isServerCorrect(serverId: String) =
-    serverId == this.serverId
-
+  def isServerCorrect(serverId: String) = serverId == this.serverId
+    
+  def toggleState: Player = this.copy(state = if (state == Paused) Running else Paused)
 }
 
 object Player {
+  def apply(name: String, url: String): Player = Player(uuid, name, url, Running, uuid, uuid)
+  
+  sealed trait State
+  case object Paused extends State
+  case object Running extends State
+  
+  implicit val writePlayer = Writes[Player] { v =>
+    Json.obj("uid" -> v.uid, "name" -> v.name, "url" -> v.url, "state" -> v.state.toString)
+  }
+  val writePlayerSensitive = Writes[Player] { v =>
+    writePlayer.writes(v).asInstanceOf[JsObject] ++ 
+      Json.obj("playerAuth" -> v.playerAuth, "serverId" -> v.serverId)
+  }
+  
   private val ref = Ref(Seq[Player]()).single
 
   def register(newPlayer: NewPlayer): Try[Player] = {
@@ -48,12 +55,22 @@ object Player {
   }
 
   def all: Seq[Player] = ref.get
+  
+  def find(uid: String, secret: String): Option[Player] =
+    ref.get.find(p => p.uid == uid && p.isAuthCorrect(secret))
 
-  val sensitivPlayer = Json.format[Player]
-
-  def unregister(uid: String, secret: String) {
-    ref.get.find(p => p.uid == uid && p.isAuthCorrect(secret)).map { player =>
+  def unregister(uid: String, secret: String): Unit =
+    find(uid, secret).map { player =>
       ref.transform(_.filterNot(_ == player))
     }
-  }
+  
+  def toggleState(uid: String, secret: String): Option[Player] =
+    ref.transformAndExtract { players =>
+      find(uid, secret).map { oldPlayer =>
+        val toggledPlayer = oldPlayer.toggleState
+        (players.filterNot(_ == oldPlayer) :+ toggledPlayer, Some(toggledPlayer))
+      }.getOrElse((players, None))
+    }
+
+  private[Player] def uuid() = UUID.randomUUID.toString
 }
