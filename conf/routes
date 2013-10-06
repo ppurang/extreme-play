@@ -12,6 +12,7 @@ GET         /test                controllers.VisibilityTesting.test(url: String)
 GET         /player              controllers.Registration.findAll
 POST        /player              controllers.Registration.register
 DELETE      /player/:uid         controllers.Registration.unregister(uid: String)
+POST        /player/:uid         controllers.Registration.togglePause(uid: String)
 
 # playing a player
 

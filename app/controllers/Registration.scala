@@ -1,7 +1,8 @@
 package controllers
 
 import play.api.mvc._
-import play.api.libs.json._
+import play.api.libs.json.Json.toJson
+import play.api.libs.json.JsError.toFlatJson
 import models._
 import NewPlayer._
 import play.api.Play._
@@ -9,14 +10,8 @@ import play.api.Play._
 object Registration extends Controller {
   val unregisterable = current.configuration.getBoolean("feature.player.unregister-able").getOrElse(false)
   
-  implicit val writePlayerPublic = new Writes[models.Player] {
-    def writes(v: models.Player): JsValue = {
-      Json.obj("uid" -> v.uid.toString(), "name" -> v.name, "url" -> v.url)
-    }
-  }
-  
   def findAll = Action(parse.empty) { implicit req => 
-    Ok(Json.toJson(models.Player.all))
+    Ok(toJson(models.Player.all))
   }
 
   def register = Action(parse.json) { implicit request =>
@@ -24,7 +19,7 @@ object Registration extends Controller {
       case newPlayer: NewPlayer =>
         val attemp = models.Player.register(newPlayer)
         attemp.map { player =>
-          Created(Json.toJson(player)(models.Player.sensitivPlayer)).
+          Created(toJson(player)(models.Player.writePlayerSensitive)).
           withHeaders(
             "Location" ->
               routes.History.player(player.uid.toString).absoluteURL().toString
@@ -34,14 +29,23 @@ object Registration extends Controller {
         }
 
     }.recoverTotal {
-      e => BadRequest("Faulty payload: " + JsError.toFlatJson(e))
+      e => BadRequest("Faulty payload: " + toFlatJson(e))
     }
   }
 
-  def unregister(uid: String) = Action(parse.anyContent) { request =>
-    if (unregisterable) {
-      request.headers.get("player-auth-key").map(models.Player.unregister(uid, _))
-      NoContent
-    } else NotFound("Disabled in configuration")
+  def unregister(uid: String) = FeaturedAction("feature.player.unregister-able") { request =>
+    request.headers.get("player-auth-key").map(models.Player.unregister(uid, _))
+    NoContent
+  }
+  
+  def togglePause(uid: String) = FeaturedAction("feature.player.pause-able") { request => 
+    request.headers.get("player-auth-key").map(
+        models.Player.toggleState(uid, _).map { toggledPlayer => 
+          toggledPlayer.state match {
+            case models.Player.Paused => Ok(s"player ${toggledPlayer.name} is now pausing")
+            case models.Player.Running => Ok(s"player ${toggledPlayer.name} is now running")
+          }  
+        }.getOrElse(Ok) //TODO player not found or no matching key
+    ).getOrElse(BadRequest) //TODO no auth-key
   }
 }
