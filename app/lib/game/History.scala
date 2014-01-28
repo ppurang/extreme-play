@@ -6,7 +6,7 @@ import lib.game.History.{HistoryResponse, GetHistory, HistoryEvent}
 object History {
   case class HistoryEvent(playerId: String)
   case class GetHistory(playerId: String)
-  case class HistoryResponse(playerId: String, history: Vector[HistoryEvent])
+  case class HistoryResponse(playerId: String, history: Option[Vector[HistoryEvent]])
 }
 class History extends Actor {
 
@@ -16,7 +16,7 @@ class History extends Actor {
 
   private def updated(state: Map[String, Vector[HistoryEvent]]): Receive = {
     case GetHistory(playerId) =>
-      sender ! HistoryResponse(playerId, state.getOrElse(playerId, Vector.empty))
+      sender ! HistoryResponse(playerId, state.get(playerId))
     case e: HistoryEvent =>
       val newState = if (state.keySet(e.playerId)) {
         state map { case (k, v) => if (k == e.playerId) (k, v :+ e) else (k, v)}
