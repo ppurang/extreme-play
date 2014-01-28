@@ -6,6 +6,8 @@ import java.util.UUID
 import lib.game.Game
 import lib.game.GameProtocol
 import play.api.libs.json._
+import play.GlobalSettings
+import play.api.libs.concurrent.Akka
 
 case class Player(uid: String, name: String, url: String, state: Player.State, playerAuth: String, serverId: String) {
   import Player._
@@ -48,7 +50,10 @@ object Player {
     }
 
     createTry.foreach { player =>
-      Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url, player.uid)
+      import play.api.Play.current
+      val evt = GameProtocol.PlayerRegistered(player.name, player.url, player.uid)
+      Game.ref ! evt
+      Akka.system.eventStream.publish(evt)
     }
 
     createTry
