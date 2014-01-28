@@ -5,5 +5,5 @@ import scala.util.Random
 
 package object game {
   type TaskIntervalGenerator = () => FiniteDuration
-  val defaultTaskIntervalGen: TaskIntervalGenerator = () => (Random.nextInt(5000) + 100).seconds
+  val defaultTaskIntervalGen: TaskIntervalGenerator = () => 10.seconds
 }

@@ -8,7 +8,7 @@ import play.api.libs.ws.WS
 import play.api.libs.concurrent.Execution.Implicits._
 
 import play.api.libs.json._
-import scala.util.{Try, Success, Failure}
+import scala.util.{Random, Try, Success, Failure}
 
 import scala.concurrent.duration._
 
@@ -23,8 +23,15 @@ case class User(name: String, url: String) {
 
   def ask(question: Question): Future[Answer] = {
     val ms = System.currentTimeMillis
-    WS.url(url).withRequestTimeout(User.timeout).post(question.toJson).collect { case response =>
-      import response._
+    val request = WS.url(url).withRequestTimeout(User.timeout)
+    val rsp =
+      if (Random.nextBoolean())
+        request.withQueryString(question.toQueryParameter: _*).get()
+      else
+        request.post(question.toJson)
+    rsp.collect {
+        case response =>
+          import response._
 
       status match {
         case 200  => Answer.fromJson(json).copy(duration = (System.currentTimeMillis - ms) millis)
@@ -40,6 +47,7 @@ object User {
 
 case class Question(text: String, uuid: String = uuid) {
   def toJson: JsValue = Json.obj("query" -> text, "uuid" -> uuid)
+  def toQueryParameter = Seq(("q", text), ("uuid", uuid))
 }
 case class Answer(text: String, uuid: String, questionUUID: String, duration: Duration = -1 millis)
 
