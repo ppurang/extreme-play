@@ -44,7 +44,7 @@ package object logic {
     val entities = NonEmptyList(
       Entity("apple", "color", "red", 30),
       Entity("banana", "color", "yellow", 30),
-      Entity("bottle", "beverage", "beer", 30)
+      Entity("bottle", "beverage", "beer", 50)
     )
     for {
       entity ← oneofL(entities)
