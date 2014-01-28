@@ -34,8 +34,10 @@ package object logic {
       lst ← numberList2Gen(10)
       res ← oneofL(funLst)
       (fun, desc, score) = res
-    } yield Task(s"What is the result of ${lst.mkString(desc)}?",
-      _ == lst.reduceRight(fun).toString, score + lst.size)
+    } yield new Task(s"What is the result of ${lst.mkString(desc)}?",
+      score + lst.size) {
+      override def verify(answer: String) = answer == lst.reduceRight(fun).toString
+    }
   }
 
   lazy val matcherTaskGen: Rng[Task] = {
@@ -48,8 +50,10 @@ package object logic {
     )
     for {
       entity ← oneofL(entities)
-    } yield Task(s"What is the ${entity.is} of ${entity.name}?",
-      _ == entity.answer, entity.score)
+    } yield new Task(s"What is the ${entity.is} of ${entity.name}?",
+      entity.score) {
+      override def verify(answer: String) = answer == entity.answer
+    }
   }
 
   lazy val selectOneGen: Rng[Task] = {
@@ -65,8 +69,10 @@ package object logic {
       lst   ← chooseint(1, 10).list1(Size(10))
       quest ← oneofL(questions)
       (name, fn, score) = quest
-    } yield Task(s"What is the $name of ${lst.list mkString ", "}",
-      _ == fn(lst.list).toString, score + lst.size)
+    } yield new Task(s"What is the $name of ${lst.list mkString ", "}",
+      score + lst.size) {
+      override def verify(answer: String) = answer == fn(lst.list).toString
+    }
   }
 
   lazy val streamTaskGen: Rng[Task] = {
@@ -87,9 +93,11 @@ package object logic {
       n   ← chooseint(1, 5)
       res ← oneofL(streams)
       (stream, name, score) = res
-    } yield Task(
+    } yield new Task(
       s"What are first $n elements of $name (space-separated)?",
-      _ == stream.take(n).mkString(" "), score + n)
+      score + n) {
+      override def verify(answer: String) = answer == stream.take(n).mkString(" ")
+    }
   }
 
   lazy val mathTaskStream    = getTaskStream(mathTaskGen)

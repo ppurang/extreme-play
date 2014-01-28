@@ -34,7 +34,7 @@ case class User(name: String, url: String) {
           import response._
 
       status match {
-        case 200  => Answer.fromJson(json).copy(duration = (System.currentTimeMillis - ms) millis)
+        case 200  => Answer.fromJson(json).copy(duration = (System.currentTimeMillis - ms))
         case code => throw Error(code, statusText, body, question.uuid)
       }
     }
@@ -49,7 +49,7 @@ case class Question(text: String, uuid: String = uuid) {
   def toJson: JsValue = Json.obj("query" -> text, "uuid" -> uuid)
   def toQueryParameter = Seq(("q", text), ("uuid", uuid))
 }
-case class Answer(text: String, uuid: String, questionUUID: String, duration: Duration = -1 millis)
+case class Answer(text: String, uuid: String, questionUUID: String, duration: Long = -1)
 
 object Answer {
   def fromJson(json: JsValue): Answer = Answer(json \ "text" toString, uuid, json \ "question" toString)
