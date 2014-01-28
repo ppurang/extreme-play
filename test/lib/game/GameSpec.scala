@@ -27,7 +27,7 @@ class GameSpec extends TestKit(ActorSystem("test-system"))
       game ! PlayerRegistered("Viktor Klang", "http:localhost:9000")
       implicit val timeout = akka.util.Timeout(30.seconds)
       val future = game ? GameProtocol.GetRegisteredPlayers
-      val Success(registeredPlayers: Set[String]) = future.value.get
+      val Success(registeredPlayers) = future.value.get
       registeredPlayers should equal(Set("Martin Odersky","Viktor Klang"))
     }
 

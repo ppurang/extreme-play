@@ -7,11 +7,12 @@ import lib.game.Player.NewTaskRequired
 import controllers.logic.infiniteTaskRepo
 import talk.{Error, Answer, Question, User}
 import scala.util.{Success, Failure}
+import models.Task
 
 object PlayerProtocol {
   case object GameStarted
-  case class TaskAnswered(teamName: String, answer: Answer)
-  case class TaskAnswerFailed(teamName: String, error: Error)
+  case class TaskAnswered(teamName: String, answer: Answer, task: Task)
+  case class TaskAnswerFailed(teamName: String, error: Error, task: Task)
   case object KillYourself
 }
 
@@ -41,11 +42,11 @@ class Player(
         val responseF = webservice ask Question(task.query)
         responseF onComplete {
           case Success(answer) =>
-            context.system.eventStream publish TaskAnswered(name, answer)
-            scheduleNewTask
+            context.system.eventStream publish TaskAnswered(name, answer, task)
+            scheduleNewTask()
           case Failure(error: Error) =>
-            context.system.eventStream publish TaskAnswerFailed(name, error)
-            scheduleNewTask
+            context.system.eventStream publish TaskAnswerFailed(name, error, task)
+            scheduleNewTask()
           case _ =>
         }
       }
