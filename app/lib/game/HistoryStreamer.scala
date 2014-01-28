@@ -15,5 +15,7 @@ class HistoryStreamer(val channel: Channel[HistoryEvent]) extends Actor {
       channel.push(e)
     }
   }
+  
+  override def postStop = context.system.eventStream.unsubscribe(self)
 
 }
