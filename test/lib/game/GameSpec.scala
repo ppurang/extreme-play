@@ -17,14 +17,14 @@ class GameSpec extends TestKit(ActorSystem("test-system"))
   describe("The Game actor") {
     it("should create new actor for a registered player and remember it") {
       val game = TestActorRef[Game]
-      game ! PlayerRegistered("team-foo", "http:localhost:9000")
+      game ! PlayerRegistered("team-foo", "http:localhost:9000", "test")
       game.underlyingActor.playersByName.contains("team-foo") should equal(true)
     }
 
     it("should returned the list of registered users") {
       val game = TestActorRef[Game]
-      game ! PlayerRegistered("Martin Odersky", "http:localhost:9000")
-      game ! PlayerRegistered("Viktor Klang", "http:localhost:9000")
+      game ! PlayerRegistered("Martin Odersky", "http:localhost:9000", "test")
+      game ! PlayerRegistered("Viktor Klang", "http:localhost:9000", "test")
       implicit val timeout = akka.util.Timeout(30.seconds)
       val future = game ? GameProtocol.GetRegisteredPlayers
       val Success(registeredPlayers) = future.value.get
