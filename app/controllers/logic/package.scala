@@ -28,7 +28,6 @@ package object logic {
       NonEmptyList(
         ({(i: Int, j: Int) ⇒ i + j}, " + ", 0),
         ({(i: Int, j: Int) ⇒ i - j}, " - ", 0),
-        ({(i: Int, j: Int) ⇒ i / j}, " / ", 1),
         ({(i: Int, j: Int) ⇒ i * j}, " * ", 1)
       )
     for {
@@ -45,7 +44,7 @@ package object logic {
     val entities = NonEmptyList(
       Entity("apple", "color", "red", 30),
       Entity("banana", "color", "yellow", 30),
-      Entity("bottle", "beverage", "beer", 30)
+      Entity("bottle", "beverage", "beer", 50)
     )
     for {
       entity ← oneofL(entities)
@@ -89,7 +88,7 @@ package object logic {
       res ← oneofL(streams)
       (stream, name, score) = res
     } yield Task(
-      s"What is the first $n elements of $name (space-separated)?",
+      s"What are first $n elements of $name (space-separated)?",
       _ == stream.take(n).mkString(" "), score + n)
   }
 
