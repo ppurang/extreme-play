@@ -2,6 +2,7 @@ package lib.game
 
 import akka.actor.Actor
 import lib.game.History.{HistoryResponse, GetHistory, HistoryEvent}
+import lib.game.GameProtocol._
 
 object History {
   case class HistoryEvent(playerId: String)
@@ -11,10 +12,19 @@ object History {
 class History extends Actor {
 
   context.system.eventStream.subscribe(self, classOf[HistoryEvent])
+  context.system.eventStream.subscribe(self, classOf[PlayerEvent])
 
   def receive = updated(Map.empty[String, Vector[HistoryEvent]])
 
   private def updated(state: Map[String, Vector[HistoryEvent]]): Receive = {
+    case PlayerRegistered(name, url, uuid) ⇒ {
+      val newState = state updated(uuid, Vector())
+      context become updated(newState)
+    }
+    case PlayerUnregistered(name, uuid) ⇒ {
+      val newState = state - uuid
+      context become updated(newState)
+    }
     case GetHistory(playerId) =>
       sender ! HistoryResponse(playerId, state.get(playerId))
     case e: HistoryEvent =>
