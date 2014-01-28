@@ -16,7 +16,9 @@ object History extends Controller {
       implicit val timeout = Timeout(200.millis)
       implicit val historyEventFormat = Json.format[HistoryEvent]
       implicit val historyResponseFormat = Json.format[HistoryResponse]
-      (Game.history ? GetHistory(uid)).mapTo[HistoryResponse].map(x => Ok(Json.toJson(x)))
+      (Game.history ? GetHistory(uid)).mapTo[HistoryResponse].map { x =>
+        x.history.fold(NotFound(""))(events => Ok(Json.toJson(events)))
+      }
   }
 
 }
