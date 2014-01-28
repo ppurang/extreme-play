@@ -7,10 +7,9 @@ import play.api.libs.concurrent.Akka
 import play.api.Play.current
 
 object GameProtocol {
-  sealed trait PlayerEvent
-  case class PlayerRegistered(name: String, url: String, uuid: String) extends PlayerEvent
-  case object GetRegisteredPlayers extends PlayerEvent
-  case class PlayerUnregistered(name: String, uuid: String) extends PlayerEvent
+  case class PlayerRegistered(name: String, url: String, uuid: String)
+  case object GetRegisteredPlayers
+  case class PlayerUnregistered(name: String, uuid: String)
 }
 
 object Game {
@@ -29,12 +28,12 @@ class Game extends Actor with ActorLogging {
       	playersByName += (name -> actorPlayer.path)
       	actorPlayer ! PlayerProtocol.GameStarted 
       } else {
-      	//player already registreted, what should we do???
+      	//player already registered, what should we do???
       }
 
     case PlayerUnregistered(name, uuid) =>
     	if (!playersByName.contains(name)){
-	      	//player is not registreted, what should we do???
+	      	//player is not registered, what should we do???
       } else {
       		val actorPath = playersByName(name)
       		playersByName -= name
