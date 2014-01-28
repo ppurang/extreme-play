@@ -48,7 +48,7 @@ object Player {
     }
 
     createTry.foreach { player =>
-      Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url)
+      Game.ref ! GameProtocol.PlayerRegistered(player.name, player.url, player.uid)
     }
 
     createTry

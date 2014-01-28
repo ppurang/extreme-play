@@ -7,9 +7,10 @@ import play.api.libs.concurrent.Akka
 import play.api.Play.current
 
 object GameProtocol {
-  case class PlayerRegistered(name: String, url: String)
-  case object GetRegisteredPlayers
-  case class PlayerUnregistered(name: String)
+  sealed trait PlayerEvent
+  case class PlayerRegistered(name: String, url: String, uuid: String) extends PlayerEvent
+  case object GetRegisteredPlayers extends PlayerEvent
+  case class PlayerUnregistered(name: String, uuid: String) extends PlayerEvent
 }
 
 object Game {
@@ -22,7 +23,7 @@ class Game extends Actor with ActorLogging {
   import GameProtocol._
   private[game] var playersByName = Map.empty[String, ActorPath]
   override def receive = LoggingReceive {
-    case PlayerRegistered(name, url) =>
+    case PlayerRegistered(name, url, uuid) =>
       if (!playersByName.contains(name)){
       	val actorPlayer = context.actorOf(Player.props(name, url))
       	playersByName += (name -> actorPlayer.path)
@@ -31,7 +32,7 @@ class Game extends Actor with ActorLogging {
       	//player already registreted, what should we do???
       }
 
-    case PlayerUnregistered(name) =>
+    case PlayerUnregistered(name, uuid) =>
     	if (!playersByName.contains(name)){
 	      	//player is not registreted, what should we do???
       } else {
