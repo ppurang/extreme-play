@@ -14,5 +14,5 @@ object NewPlayer {
 }
 
 case class Task(query: String, verify: String => Boolean, score: Int = 0) {
-  def scoreAnswer(answer: String) = if (verify(answer)) score else 0
+  def scoreAnswer(answer: String) = if (verify(answer)) score else -score
 }

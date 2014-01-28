@@ -31,11 +31,8 @@ class Scorer extends Actor {
    	context.system.eventStream publish eventScore
    }
 
-   def verifyAnswer(answer: Answer, task: Task) : Integer = {
-   	val f = task.verify(answer.text)
-   	if (f) task.score
-   	else -task.score
-   }
+   def verifyAnswer(answer: Answer, task: Task) : Integer = task.scoreAnswer(answer.text)
+   
 }
 
 object Scorer {
