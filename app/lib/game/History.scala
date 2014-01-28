@@ -4,9 +4,7 @@ import akka.actor.Actor
 import lib.game.History.{HistoryResponse, GetHistory, HistoryEvent}
 
 object History {
-  sealed trait HistoryEvent {
-    def playerId: String
-  }
+  case class HistoryEvent(playerId: String)
   case class GetHistory(playerId: String)
   case class HistoryResponse(playerId: String, history: Vector[HistoryEvent])
 }
