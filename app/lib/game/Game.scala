@@ -15,6 +15,7 @@ object GameProtocol {
 object Game {
   val ref: ActorRef = Akka.system.actorOf(Props[Game])
   val history: ActorRef = Akka.system.actorOf(Props[History])
+  val score: ActorRef = Akka.system.actorOf(Props[Scorer])
 }
 
 class Game extends Actor with ActorLogging {
