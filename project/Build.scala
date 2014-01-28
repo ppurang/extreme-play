@@ -14,6 +14,7 @@ object ApplicationBuild extends Build {
     anorm,
     filters,
     "org.scalaz" %% "scalaz-core" % "7.0.5",
+    "io.argonaut" %% "argonaut" % "6.0.2",
     "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT",
     "com.typesafe.slick" %% "slick" % "1.0.1",
     "net.liftweb" %% "lift-json-scalaz7" % "2.5",
