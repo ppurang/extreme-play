@@ -8,13 +8,14 @@ import play.api.libs.ws.WS
 import play.api.libs.concurrent.Execution.Implicits._
 
 import play.api.libs.json._
-import scala.util.{Random, Try, Success, Failure}
+import scala.util.Random
 
-import scala.concurrent.duration._
+import java.util.concurrent.TimeUnit.NANOSECONDS.{toMillis => toMS}
+import System.{nanoTime => now}
 
 case class User(name: String, url: String) {
 
-  def ping: Future[Boolean] = WS.url(url).withRequestTimeout(User.timeout).get.map { response =>
+  def ping: Future[Boolean] = WS.url(url).withRequestTimeout(User.timeout).get().map { response =>
     response.status match {
       case 200 => true
       case _ => false
@@ -22,7 +23,7 @@ case class User(name: String, url: String) {
   }
 
   def ask(question: Question): Future[Answer] = {
-    val ms = System.currentTimeMillis
+    val start = now
     val request = WS.url(url).withRequestTimeout(User.timeout)
     val rsp =
       if (Random.nextBoolean())
@@ -34,7 +35,7 @@ case class User(name: String, url: String) {
           import response._
 
       status match {
-        case 200  => Answer.fromJson(json).copy(duration = (System.currentTimeMillis - ms))
+        case 200 => Answer.fromJson(json).copy(duration = toMS(now - start))
         case code => throw Error(code, statusText, body, question.uuid)
       }
     }
@@ -52,7 +53,7 @@ case class Question(text: String, uuid: String = uuid) {
 case class Answer(text: String, uuid: String, questionUUID: String, duration: Long = -1)
 
 object Answer {
-  def fromJson(json: JsValue): Answer = Answer(json \ "text" toString, uuid, json \ "question" toString)
+  def fromJson(json: JsValue): Answer = Answer(json \ "text" toString(), uuid, json \ "question" toString())
 }
 
 case class Error(statusCode: Int, statusText: String, message: String, questionUUID: String) extends Exception(message)
