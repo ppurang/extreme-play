@@ -20,28 +20,32 @@ object Game {
 
 class Game extends Actor with ActorLogging {
   import GameProtocol._
+
   private[game] var playersByName = Map.empty[String, ActorPath]
+
   override def receive = LoggingReceive {
-    case PlayerRegistered(name, url, uuid) =>
-      if (!playersByName.contains(name)){
-      	val actorPlayer = context.actorOf(Player.props(name, url))
-      	playersByName += (name -> actorPlayer.path)
-      	actorPlayer ! PlayerProtocol.GameStarted 
+    case pr@PlayerRegistered(name, url, uuid) =>
+      if (!playersByName.contains(name)) {
+        val actorPlayer = context.actorOf(Player.props(name, url))
+        playersByName += (name -> actorPlayer.path)
+        //Game.history ! pr
+        actorPlayer ! PlayerProtocol.GameStarted
       } else {
-      	//player already registered, what should we do???
+        //player already registered, what should we do???
       }
 
-    case PlayerUnregistered(name, uuid) =>
-    	if (!playersByName.contains(name)){
-	      	//player is not registered, what should we do???
+    case pur@PlayerUnregistered(name, uuid) =>
+      if (!playersByName.contains(name)) {
+        //player is not registered, what should we do???
       } else {
-      		val actorPath = playersByName(name)
-      		playersByName -= name
-      		context.actorSelection(actorPath) ! PlayerProtocol.KillYourself
+        val actorPath = playersByName(name)
+        playersByName -= name
+        //Game.history ! pur
+        context.actorSelection(actorPath) ! PlayerProtocol.KillYourself
       }
 
     case GetRegisteredPlayers =>
-    	  sender ! playersByName.keySet 
+      sender ! playersByName.keySet
 
   }
 }

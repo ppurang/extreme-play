@@ -10,7 +10,6 @@ object History {
   case class HistoryResponse(playerId: String, history: Option[Vector[ScoreChangeAnswered]])
 }
 class History extends Actor {
-
   Set(
     classOf[PlayerRegistered],
     classOf[PlayerUnregistered],
@@ -19,27 +18,31 @@ class History extends Actor {
     context.system.eventStream.subscribe(self, c)
   }
 
-  def receive = updated(Map.empty[String, Vector[ScoreChangeAnswered]])
+  def receive = {
+    updated(Map.empty[String, Vector[ScoreChangeAnswered]])
+  }
 
-  private def updated(state: Map[String, Vector[ScoreChangeAnswered]]): Receive = LoggingReceive {
-    case PlayerRegistered(name, url, uuid) ⇒ {
-      val newState = state updated(uuid, Vector())
-      context become updated(newState)
-    }
-    case PlayerUnregistered(name, uuid) ⇒ {
-      val newState = state - uuid
-      context become updated(newState)
-    }
-    case GetHistory(playerId) =>
-      sender ! HistoryResponse(playerId, state.get(playerId))
-    case e @ ScoreChangeAnswered(_, _, _, _) ⇒ {
-      val newState = if (state.keySet(e.playerUUID)) {
-        state map { case (k, v) => if (k == e.playerUUID) (k, v :+ e) else (k, v)}
+  private def updated(state: Map[String, Vector[ScoreChangeAnswered]]): Receive = {
+    LoggingReceive {
+      case PlayerRegistered(name, url, uuid) ⇒ {
+        val newState = state updated(uuid, Vector())
+        context become updated(newState)
       }
-      else {
-        state updated(e.playerUUID, Vector(e))
+      case PlayerUnregistered(name, uuid) ⇒ {
+        val newState = state - uuid
+        context become updated(newState)
       }
-      context become updated(newState)
+      case GetHistory(playerId) =>
+        sender ! HistoryResponse(playerId, state.get(playerId))
+      case e @ ScoreChangeAnswered(_, _, _, _) ⇒ {
+        val newState = if (state.keySet(e.playerUUID)) {
+          state map { case (k, v) => if (k == e.playerUUID) (k, v :+ e) else (k, v)}
+        }
+        else {
+          state updated(e.playerUUID, Vector(e))
+        }
+        context become updated(newState)
+      }
     }
   }
 
