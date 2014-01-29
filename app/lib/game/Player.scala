@@ -26,6 +26,9 @@ object Player {
   private case object NewTaskRequired
 }
 
+import scala.concurrent.duration._
+
+
 class Player(
     name: String,
     url: String,
@@ -35,7 +38,7 @@ class Player(
   implicit val ec = scala.concurrent.ExecutionContext.global
   override def receive = LoggingReceive {
     case GameStarted =>
-      context.system.scheduler.scheduleOnce(taskIntervalGen(), self, NewTaskRequired)
+      context.system.scheduler.schedule(10 seconds, taskIntervalGen(), self, NewTaskRequired)
     case NewTaskRequired =>
       if (infiniteTaskRepo.select.hasNext) {
         val task = infiniteTaskRepo.select.next()
